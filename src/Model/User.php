@@ -144,6 +144,24 @@ class User extends Model {
 	protected function is_private() {
 
 		if ( ! current_user_can( 'list_users' ) && false === $this->owner_matches_current_user() ) {
+
+			/**
+			 * Filter to check is user is private or not.
+			 *
+			 * @param bool    $private_check Check is user is private or not.
+			 * @param WP_User $user          User data.
+			 *
+			 * @since 1.1.2
+			 *
+			 * @return bool
+			 */
+			$skip_private_user_check = apply_filters( 'graphql_skip_private_user_check', false, $this->data );
+
+			// Skip private user check.
+			if ( $skip_private_user_check ) {
+				return false;
+			}
+
 			/**
 			 * The user loader determines if the user has published posts or not.
 			 */
