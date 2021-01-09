@@ -88,6 +88,9 @@ class User extends Model {
 
 		parent::__construct( 'list_users', $allowed_restricted_fields, $user->ID );
 
+		add_action( 'profile_update', [ $this, 'flush_user_cache' ] );
+		add_action( 'deleted_user', [ $this, 'flush_user_cache' ] );
+
 	}
 
 	/**
@@ -281,6 +284,19 @@ class User extends Model {
 
 		}
 
+	}
+
+	/**
+	 * Function to flush user cache on user update and delete.
+	 *
+	 * @return void
+	 */
+	public function flush_user_cache() {
+
+		$cache_key   = 'graphql_users_list';
+		$cache_group = 'graphql_users';
+
+		wp_cache_delete( $cache_key, $cache_group );
 	}
 
 }

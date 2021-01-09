@@ -50,6 +50,14 @@ class UserLoader extends AbstractDataLoader {
 	 */
 	public function loadKeys( array $keys ) {
 
+		$cache_key   = 'graphql_users_list';
+		$cache_group = 'graphql_users';
+		$users_list  = wp_cache_get( $cache_key, $cache_group );
+
+		if ( ! empty( $users_list ) ) {
+			return $users_list;
+		}
+
 		if ( empty( $keys ) ) {
 			return $keys;
 		}
@@ -78,6 +86,8 @@ class UserLoader extends AbstractDataLoader {
 
 		$this->load_published_author_ids( $keys );
 
+		$loaded_users = [];
+
 		/**
 		 * Loop over the Users and return an array of loaded_users,
 		 * where the key is the ID and the value is the Post passed through
@@ -98,7 +108,15 @@ class UserLoader extends AbstractDataLoader {
 			}
 		}
 
-		return ! empty( $loaded_users ) ? $loaded_users : [];
+		if ( ! empty( $loaded_users ) && ! empty( $loaded_users[0] ) ) {
+			/**
+			 * Cache users list for 30 mins.
+			 * This cache will also flush on user update and delete.
+			 */
+			wp_cache_set( $cache_key, $loaded_users, $cache_group, 30 * MINUTE_IN_SECONDS );
+		}
+
+		return $loaded_users;
 
 	}
 
